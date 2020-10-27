@@ -10,6 +10,7 @@
         android:id="@+id/text_view_pet"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:textStyle="bold"
         android:padding="@dimen/activity_margin"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

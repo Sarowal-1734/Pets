@@ -49,11 +49,37 @@ public class CatalogActivity extends AppCompatActivity {
         //PetDbHelper mDbHelper = new PetDbHelper(this);
         //Creating Database
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        //To get a Cursor that contains all rows from the pets table
-        Cursor cursor = db.rawQuery("SELECT * FROM " + PetEntry.TABLE_NAME, null);
+
+        String[] projection = {PetEntry._ID, PetEntry.COLUMN_PET_NAME, PetEntry.COLUMN_PET_BREED, PetEntry.COLUMN_PET_GENDER, PetEntry.COLUMN_PET_WEIGHT};
+        Cursor cursor = db.query(PetEntry.TABLE_NAME, projection, null, null, null, null, null);
         try {
             TextView displayView = findViewById(R.id.text_view_pet);
-            displayView.setText("Numbers of rows in pets database table: " + cursor.getCount());
+            displayView.setText("Numbers of rows in pets database table: "+ cursor.getCount()+"\n\n");
+            displayView.append(PetEntry._ID+"    "+
+                    PetEntry.COLUMN_PET_NAME+"    "+
+                    PetEntry.COLUMN_PET_BREED+"    "+
+                    PetEntry.COLUMN_PET_GENDER+"    "+
+                    PetEntry.COLUMN_PET_WEIGHT+"\n");
+
+            //Finding index of each column
+            int idColumnIndex = cursor.getColumnIndex(PetEntry._ID);
+            int nameColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_NAME);
+            int breedColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_BREED);
+            int genderColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_GENDER);
+            int weightColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_WEIGHT);
+
+            while (cursor.moveToNext()){
+                int currentId = cursor.getInt(idColumnIndex);
+                String currentName = cursor.getString(nameColumnIndex);
+                String currentBreed = cursor.getString(breedColumnIndex);
+                String currentGender = cursor.getString(genderColumnIndex);
+                String currentWeight = cursor.getString(weightColumnIndex);
+                displayView.append("\n  " + currentId + "      " +
+                        currentName+"      "+
+                        currentBreed+"        "+
+                        currentGender+"             "+
+                        currentWeight);
+            }
         }finally {
             cursor.close();
         }
