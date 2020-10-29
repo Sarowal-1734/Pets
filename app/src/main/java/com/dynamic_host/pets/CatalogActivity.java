@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -45,13 +46,14 @@ public class CatalogActivity extends AppCompatActivity {
     }
 
     private void displayDatabaseInfo(){
-        //to access database, initiate our subclass of SQLiteOpenHelper and pass the context of current activity
-        //PetDbHelper mDbHelper = new PetDbHelper(this);
-        //Creating Database
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-        String[] projection = {PetEntry._ID, PetEntry.COLUMN_PET_NAME, PetEntry.COLUMN_PET_BREED, PetEntry.COLUMN_PET_GENDER, PetEntry.COLUMN_PET_WEIGHT};
-        Cursor cursor = db.query(PetEntry.TABLE_NAME, projection, null, null, null, null, null);
+        String[] projection = {PetEntry._ID,
+                PetEntry.COLUMN_PET_NAME,
+                PetEntry.COLUMN_PET_BREED,
+                PetEntry.COLUMN_PET_GENDER,
+                PetEntry.COLUMN_PET_WEIGHT};
+        Cursor cursor = getContentResolver().query(PetEntry.CONTENT_URI, projection, null, null, null);
+
         try {
             TextView displayView = findViewById(R.id.text_view_pet);
             displayView.setText("Numbers of rows in pets database table: "+ cursor.getCount()+"\n\n");
@@ -87,15 +89,13 @@ public class CatalogActivity extends AppCompatActivity {
 
 
     private void insertPet(){
-        //Gets the data repository in write mode
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(PetEntry.COLUMN_PET_NAME, "Dog");
+        values.put(PetEntry.COLUMN_PET_NAME, "Toto");
         values.put(PetEntry.COLUMN_PET_BREED, "Terrier");
         values.put(PetEntry.COLUMN_PET_GENDER, PetEntry.GENDER_MALE);
         values.put(PetEntry.COLUMN_PET_WEIGHT, 7);
-
-        db.insert(PetEntry.TABLE_NAME, null, values);
+        //Insert a new row for Toto into the provider using the ContentResolver.
+        getContentResolver().insert(PetEntry.CONTENT_URI, values);
     }
 
     @Override

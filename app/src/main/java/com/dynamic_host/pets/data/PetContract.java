@@ -1,13 +1,21 @@
 package com.dynamic_host.pets.data;
 
+import android.net.Uri;
 import android.provider.BaseColumns;
 
 public final class PetContract {
 
+    public static final String CONTENT_AUTHORITY = "com.dynamic_host.pets";
+    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+    public static final String PATH_PETS = "pets";
+
     private PetContract(){}
 
     public static final class PetEntry implements BaseColumns{
-        public final static String TABLE_NAME = "pet";
+
+        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_PETS);
+
+        public final static String TABLE_NAME = "pets";
         public final static String _ID = BaseColumns._ID;
         public final static String COLUMN_PET_NAME = "name";
         public final static String COLUMN_PET_BREED = "breed";
