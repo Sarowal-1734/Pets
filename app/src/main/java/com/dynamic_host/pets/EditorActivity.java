@@ -3,6 +3,7 @@ package com.dynamic_host.pets;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ public class EditorActivity extends AppCompatActivity {
     private EditText mNameEditText, mBreedEditText, mWeightEditText;
     private Spinner mGenderSpiner;
     private int mGender = 0;
+    Uri currentPetUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +38,13 @@ public class EditorActivity extends AppCompatActivity {
         mWeightEditText = findViewById(R.id.edit_pet_weight);
         mGenderSpiner = findViewById(R.id.spinner_gender);
         setupSpinner();
+
+        Intent intent = getIntent();
+        currentPetUri = intent.getData();
+        if(currentPetUri == null)
+            setTitle("Add a Pet");
+        else
+            setTitle("Edit Pet");
     }
 
 
@@ -65,7 +74,7 @@ public class EditorActivity extends AppCompatActivity {
         });
     }
 
-    private void insertPet(){
+    private void savePet(){
         //Use trim to eliminate leading/trailing white space
         String name = mNameEditText.getText().toString().trim();
         String breed = mBreedEditText.getText().toString().trim();
@@ -77,12 +86,16 @@ public class EditorActivity extends AppCompatActivity {
         values.put(PetEntry.COLUMN_PET_BREED, breed);
         values.put(PetEntry.COLUMN_PET_GENDER, mGender);
         values.put(PetEntry.COLUMN_PET_WEIGHT, weight);
-        Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
-        // Show a toast message depending on whether or not the insertion was successful
-        if (newUri == null)
-            Toast.makeText(this, "Error with saving pet", Toast.LENGTH_SHORT).show();
+        if(currentPetUri != null){
+            int rowId = getContentResolver().update(currentPetUri, values, null, null);
+            // Show a toast message depending on whether or not the insertion was successful
+            if (rowId != 0)
+                Toast.makeText(this, "Pet saved", Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(this, "Error with saving pet", Toast.LENGTH_SHORT).show();
+        }
         else
-            Toast.makeText(this, "Pet saved", Toast.LENGTH_SHORT).show();
+            getContentResolver().insert(PetEntry.CONTENT_URI, values);
     }
 
     @Override
@@ -98,16 +111,28 @@ public class EditorActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             // Respond to a click on the "Insert dummy data" menu option
             case R.id.action_delete:
+                deletePet();
                 return true;
             // Respond to a click on the "Delete all entries" menu option
             case R.id.action_save:
                 //Save data to database
-                insertPet();
+                savePet();
                 //Return to parent activity
                 finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void deletePet() {
+        if (currentPetUri != null) {
+            int rowsDeleted = getContentResolver().delete(currentPetUri, null, null);
+            if(rowsDeleted != 0)
+                Toast.makeText(this, "Delete Pet Successful",Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(this, "Delete Pet Failed",Toast.LENGTH_SHORT).show();
+        }
+        finish();
     }
 
 }

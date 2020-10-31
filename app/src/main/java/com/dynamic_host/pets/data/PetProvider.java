@@ -48,6 +48,11 @@ public class PetProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Cannot Query unknown URI"+ uri);
         }
+
+        //Set Notification UR on the cursor
+        //If data changed at this URI, we know we need to update the cursor
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+
         return cursor;
     }
 
@@ -63,7 +68,7 @@ public class PetProvider extends ContentProvider {
             case PETS:
                 return insertPet(uri, values);
             default:
-                throw new IllegalArgumentException("CInsertion is not supported for "+ uri);
+                throw new IllegalArgumentException("Insertion is not supported for "+ uri);
         }
     }
 
@@ -74,16 +79,51 @@ public class PetProvider extends ContentProvider {
             Log.e(LOG_TAG, "Failed to insert row for " + uri);
             return null;
         }
+        //Notify all listener that the data has changed for the URI
+        getContext().getContentResolver().notifyChange(uri, null);
         return ContentUris.withAppendedId(uri, id);
     }
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        int id;
+        int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PETS:
+                id = db.delete(PetContract.PetEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            case PET_ID:
+                selection = PetContract.PetEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                id = db.delete(PetContract.PetEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            default:
+                throw new IllegalArgumentException("Cannot Query unknown URI" + uri);
+        }
+        //Notify all listener that the data has changed for the URI
+        getContext().getContentResolver().notifyChange(uri, null);
+        return id;
     }
-
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return 0;
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        int rowUpdate;
+        int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PETS:
+                rowUpdate = db.update(PetEntry.TABLE_NAME, values, selection, selectionArgs);
+                break;
+            case PET_ID:
+                selection = PetContract.PetEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                rowUpdate = db.update(PetEntry.TABLE_NAME, values, selection, selectionArgs);
+                break;
+            default:
+                throw new IllegalArgumentException("Cannot Query unknown URI" + uri);
+        }
+        //Notify all listener that the data has changed for the URI
+        getContext().getContentResolver().notifyChange(uri, null);
+        return rowUpdate;
     }
 }
